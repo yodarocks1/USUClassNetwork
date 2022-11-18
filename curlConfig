@@ -1,0 +1,6 @@
+url = "https://ss.banner.usu.edu/StudentRegistrationSsb/ssb/searchResults/searchResults?startDatepicker=&endDatepicker=&uniqueSessionId=g64xy1665549186631"
+header = "Accept: application/json, text/javascript, */*; q=0.01"
+header = "Cookie: JSESSIONID=BD4DB4E3D3C809214D74CEB5285570CF; SSOMANAGERZPROD=docker-banner-08; IDMSESSID=E35F451BBAFE0A5DF7BD9BA1078BF7AEF87D2C0228D97A4ABF538D9FA84334F3270139CF65F2456B6A202EA66B64F245; GENERALSSB=k8s-bannerprod-03; dtCookie=v_4_srv_-2D88_sn_BBIN0TMMNHT8KG2KORU1BO8Q6H76GAA5; rxVisitor=1638131298448GGTUDM4FDSJ7NKAQKJN4MSHNFPQHT7HL; dtSa=-; rxvt=1638133102532|1638131298453; dtPC=-88$131298435_529h-vFUJCPUUHUNGRCKANLAUVMCWFWLHRFECF-0e0; dtLatC=13; _ga=GA1.2.775685719.1638836861; __utmc=51572397; StudentSelfService=k8s-bannerprod-04; acceptCookies=true; StudentRegistrationSsb=docker-banner-06"
+-G
+-d "pageMaxSize=100"
+-d "sortColumn=subjectDescription&sortDirection=asc"
