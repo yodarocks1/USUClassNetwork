@@ -67,10 +67,16 @@ def get_program(url):
     poid = url[url.index("poid=") + 5:url.index("&returnto=")]
     result = requests.get(url)
     soup = BeautifulSoup(result.content, 'html.parser')
-    anchors = soup.select(".acalog-course a")
+    anchors1 = soup.select("a[href^=\"showCourse\"]")
+    anchors2 = soup.select("a[href^=\"acalogPopup\"]")
+    anchors3 = soup.select("a[href^=\"showCatalogData\"]")
     courses = []
-    for anchor in anchors:
+    for anchor in anchors1:
         courses.append(anchor.attrs["onclick"].split(",")[1].strip().replace("'", ""))
+    for anchor in anchors2:
+        courses.append(anchor.attrs["onclick"].split("'")[1].strip().replace("&print", "").replace("preview_course.php?catoid=35&coid=", ""))
+    for anchor in anchors3:
+        courses.append(anchor.attrs["onclick"].split(",")[2].strip().replace("'", ""))
     desc = soup.select_one("#acalog-content").text
     header = soup.select_one(".program_description")
     header1 = header.find_next()
