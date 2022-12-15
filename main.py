@@ -168,26 +168,6 @@ def course_id_map(courses):
         id_map[course["courseID"]] = course["subNum"]
     return id_map
 
-class TripartiteGraph():
-    def __init__(self):
-        self.graphs = [nx.Graph(), nx.Graph()]
-    def add_node(self, value, kpartite, **kwargs):
-        if "bipartite" in kwargs:
-            kpartite = kwargs["bipartite"]
-        if kpartite not in [0, 1, 2]:
-            raise ValueError(f"Level {kpartite} is not valid on a TripartiteGraph (0, 1, 2)")
-        if kpartite == 0:
-            self.graphs[0].add_node(value, bipartite=kpartite, **kwargs)
-        elif kpartite == 1:
-            self.graphs[0].add_node(value, bipartite=kpartite, **kwargs)
-            self.graphs[1].add_node(value, bipartite=(kpartite - 1), **kwargs)
-        elif kpartite == 2:
-            self.graphs[1].add_node(value, bipartite=(kpartite - 1), **kwargs)
-    def add_edge(self, a, b, frompartite, **kwargs):
-        if frompartite not in [0, 1]:
-            raise ValueError(f"Level {frompartite} is not a valid starting level on a TripartiteGraph(0, 1, 2)")
-        self.graphs[frompartite].add_edge(a, b, **kwargs)
-
 def create_graphs():
     f = open("programsData/programs_all.json")
     programs = json.load(f)
@@ -202,6 +182,16 @@ def create_graphs():
     term2023s = json.load(f)
     f.close()
 
+    colleges = dict()
+    departments = dict()
+    for program in programs:
+        if program["college"] not in colleges:
+            colleges[str(program["college"])] = []
+        colleges[program["college"]].append(str(program["department"]))
+        if program["department"] not in departments:
+            departments[str(program["department"])] = []
+        departments[str(program["department"])].append(program["poid"])
+
     course_map = course_id_map(courses)
     registrar_data = load_registrar_data()
     
@@ -215,25 +205,45 @@ def create_graphs():
             w = int(row["STUDENT_COUNT_TAKEN_COURSE"]) / int(row["STUDENT_COUNT_IN_PROGRAM_FALL_2022"])
             g_registrar.add_edge(f"c{course[0]} {course[1]}", f"p{row['PROGRAM']}", weight=w)
 
-    g2022f = TripartiteGraph()
-    g2023s = TripartiteGraph()
+    # BIPARTITE:
+    # 0:g - Colleges
+    # 1:d - Departments
+    # 2:p - Programs
+    # 3:c - Courses
+    # 4:s - Sections
+
+    g2022f = nx.Graph()
+    g2023s = nx.Graph()
     for course in courses:
-        g2022f.add_node("c" + course["subNum"], 1, attr=course_to_data_dict(course))
-        g2023s.add_node("c" + course["subNum"], 1, attr=course_to_data_dict(course))
+        g2022f.add_node("c" + course["subNum"], attr=course_to_data_dict(course), bipartite=3)
+        g2023s.add_node("c" + course["subNum"], attr=course_to_data_dict(course), bipartite=3)
 
     for program in programs:
-        g2022f.add_node(f"p{program['poid']}", 0, attr=program_to_data_dict(program))
-        g2023s.add_node(f"p{program['poid']}", 0, attr=program_to_data_dict(program))
+        g2022f.add_node(f"p{program['poid']}", attr=program_to_data_dict(program), bipartite=2)
+        g2023s.add_node(f"p{program['poid']}", attr=program_to_data_dict(program), bipartite=2)
         for course_id in program["courses"]:
-            g2022f.add_edge(f"p{program['poid']}", "c" + course_map[course_id], 0)
-            g2023s.add_edge(f"p{program['poid']}", "c" + course_map[course_id], 0)
+            g2022f.add_edge(f"p{program['poid']}", "c" + course_map[course_id])
+            g2023s.add_edge(f"p{program['poid']}", "c" + course_map[course_id])
+    
+    for department in departments:
+        g2022f.add_node("d" + department, bipartite=1)
+        g2023s.add_node("d" + department, bipartite=1)
+        for program in departments[department]:
+            g2022f.add_edge("d" + department, "p" + program)
+            g2023s.add_edge("d" + department, "p" + program)
+    for college in colleges:
+        g2022f.add_node("g" + college, bipartite=0)
+        g2023s.add_node("g" + college, bipartite=0)
+        for department in colleges[college]:
+            g2022f.add_edge("g" + college, "d" + department)
+            g2023s.add_edge("g" + college, "d" + department)
 
     for section in term2022f:
-        g2022f.add_node(f"s{section['id']}", 2, attr=section_to_data_dict(section))
-        g2022f.add_edge(f"s{section['id']}", "c" + section_course_to_course(section["subjectCourse"]), 1)
+        g2022f.add_node(f"s{section['id']}", attr=section_to_data_dict(section), bipartite=4)
+        g2022f.add_edge(f"s{section['id']}", "c" + section_course_to_course(section["subjectCourse"]))
     for section in term2023s:
-        g2023s.add_node(f"s{section['id']}", 2, attr=section_to_data_dict(section))
-        g2023s.add_edge(f"s{section['id']}", "c" + section_course_to_course(section["subjectCourse"]), 1)
+        g2023s.add_node(f"s{section['id']}", attr=section_to_data_dict(section), bipartite=4)
+        g2023s.add_edge(f"s{section['id']}", "c" + section_course_to_course(section["subjectCourse"]))
 
     return g2022f, g2023s, g_registrar
 
