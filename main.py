@@ -219,11 +219,11 @@ def create_graphs():
         g2023s.add_node("c" + course["subNum"], attr=course_to_data_dict(course), bipartite=3)
 
     for program in programs:
-        g2022f.add_node(f"p{program['poid']}", attr=program_to_data_dict(program), bipartite=2)
-        g2023s.add_node(f"p{program['poid']}", attr=program_to_data_dict(program), bipartite=2)
+        g2022f.add_node("p" + program["poid"], attr=program_to_data_dict(program), bipartite=2)
+        g2023s.add_node("p" + program["poid"], attr=program_to_data_dict(program), bipartite=2)
         for course_id in program["courses"]:
-            g2022f.add_edge(f"p{program['poid']}", "c" + course_map[course_id])
-            g2023s.add_edge(f"p{program['poid']}", "c" + course_map[course_id])
+            g2022f.add_edge("p" + program["poid"], "c" + course_map[course_id])
+            g2023s.add_edge("p" + program["poid"], "c" + course_map[course_id])
     
     for department in departments:
         g2022f.add_node("d" + department, bipartite=1)

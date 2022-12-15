@@ -67,9 +67,9 @@ def get_program(url):
     poid = url[url.index("poid=") + 5:url.index("&returnto=")]
     result = requests.get(url)
     soup = BeautifulSoup(result.content, 'html.parser')
-    anchors1 = soup.select("a[href^=\"showCourse\"]")
-    anchors2 = soup.select("a[href^=\"acalogPopup\"]")
-    anchors3 = soup.select("a[href^=\"showCatalogData\"]")
+    anchors1 = soup.select("a[onclick^=\"showCourse\"]")
+    anchors2 = soup.select("a[onclick^=\"acalogPopup('preview_course.php?catoid\"]")
+    anchors3 = soup.select("a[onclick^=\"showCatalogData\"]")
     courses = []
     for anchor in anchors1:
         courses.append(anchor.attrs["onclick"].split(",")[1].strip().replace("'", ""))
@@ -121,7 +121,7 @@ if __name__ == "__main__":
         f = open(sys.argv[2], "x")
         json.dump(programs, f)
         f.close()
-    else:
+    elif sys.argv[1] != "none":
         f = open(sys.argv[1])
         j = json.load(f)
         f.close()
