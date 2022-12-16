@@ -117,7 +117,8 @@ def program_to_data_dict(program):
     return {
         "desc": program["desc"],
         "college": program["college"],
-        "department": program["department"]
+        "department": program["department"],
+        "program_type": program["program_type"]
     }
 
 def course_to_data_dict(course):
