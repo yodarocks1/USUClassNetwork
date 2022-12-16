@@ -68,15 +68,20 @@ def get_program(url):
     result = requests.get(url)
     soup = BeautifulSoup(result.content, 'html.parser')
     anchors1 = soup.select("a[onclick^=\"showCourse\"]")
-    anchors2 = soup.select("a[onclick^=\"acalogPopup('preview_course.php?catoid\"]")
+    anchors2 = soup.select("a[onclick^=\"acalogPopup('preview_course.php?catoid=35\"]")
     anchors3 = soup.select("a[onclick^=\"showCatalogData\"]")
-    courses = []
+    courses = set()
     for anchor in anchors1:
-        courses.append(anchor.attrs["onclick"].split(",")[1].strip().replace("'", ""))
+        courses.add(anchor.attrs["onclick"].split(",")[1].strip().replace("'", ""))
     for anchor in anchors2:
-        courses.append(anchor.attrs["onclick"].split("'")[1].strip().replace("&print", "").replace("preview_course.php?catoid=35&coid=", ""))
+        courses.add(anchor.attrs["onclick"].split("'")[1].strip().replace("&print", "").replace("preview_course.php?catoid=35&coid=", ""))
     for anchor in anchors3:
-        courses.append(anchor.attrs["onclick"].split(",")[2].strip().replace("'", ""))
+        course = anchor.attrs["onclick"].split(",")[2].strip().replace("'", "")
+        if len(course) != 6:
+            print(f"Bad course ID; Not included in Program {poid}: {course} (\"{anchor.text}\")")
+        else:
+            courses.add(course)
+    courses = list(courses)
     desc = soup.select_one("#acalog-content").text
     header = soup.select_one(".program_description")
     header1 = header.find_next()
@@ -104,7 +109,7 @@ if __name__ == "__main__":
     if sys.argv[1] == "getall":
         data = fetch_all()
         f = open(sys.argv[2], 'x')
-        json.dump(data, f)
+        json.dump(data, f, indent=4)
         f.close()
     elif sys.argv[1] == "all":
         data = fetch_all()
@@ -119,7 +124,7 @@ if __name__ == "__main__":
                         p["program_type"] = program_type
                         programs.append(p)
         f = open(sys.argv[2], "x")
-        json.dump(programs, f)
+        json.dump(programs, f, indent=4)
         f.close()
     elif sys.argv[1] != "none":
         f = open(sys.argv[1])
@@ -139,6 +144,6 @@ if __name__ == "__main__":
             else:
                 print(f": {i}/{l}")
         f = open(sys.argv[2], "x")
-        json.dump(programs, f)
+        json.dump(programs, f, indent=4)
         f.close()
 
